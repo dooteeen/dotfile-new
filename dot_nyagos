@@ -1,0 +1,10 @@
+-- vim: ft=lua
+nyagos.prompt = function(this)
+	if nyagos.which('starship') then
+		local starship = nyagos.eval('starship prompt 2> nul') .. '$e[37;0m' .. ' '
+		prompt = '\n' .. starship
+		return nyagos.default_prompt(prompt, "")
+	else
+		return nyagos.default_prompt("", "")
+	end
+end
