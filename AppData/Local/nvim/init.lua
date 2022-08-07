@@ -1,11 +1,13 @@
 local api = vim.api
 local cmd = vim.cmd
+local env = vim.env
 local fn  = vim.fn
 local key = vim.keymap.set
 local opt = vim.opt
 
-local is_code = (fn.exists[[g:vscode]] == 1)
-local is_win  = (fn.has[[win32]] == 1)
+is_code = (fn.exists'g:vscode' == 1)
+is_win  = (fn.has'win32' == 1)
+
 
 
 cmd [[language C]]
@@ -41,6 +43,7 @@ opt.fileformats = 'dos,unix,mac'
 opt.helplang = 'ja', 'en'
 
 opt.updatetime = 300
+opt.signcolumn = 'yes'
 
 
 
@@ -50,17 +53,14 @@ key("n", "gk", "k",  {noremap = true})
 key("n", "k",  "gk", {noremap = true})
 
 key("n", "q", "$", {noremap = true})
-key("v", "q", "$", {noremap = true})
 key("n", "Q", "q", {noremap = true})
+key("v", "q", "$", {noremap = true})
 key("v", "Q", "q", {noremap = true})
 
 key("n", "<", "<h", {noremap = true})
 key("n", ">", ">l", {noremap = true})
 key("v", "<", "<gv", {noremap = true})
 key("v", ">", ">gv", {noremap = true})
-
-key("n", "<CR>", ":<C-u>noh<CR>", {noremap = true})
-key("v", "<CR>", "=gv", {noremap = true})
 
 
 
@@ -80,9 +80,6 @@ local packer_path = fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
 local packer_url  = 'https://github.com/wbthomason/packer.nvim'
 local install_path = is_win and string.gsub(packer_path, "/", "\\") or packer_path
 
-vim.g.t1 = install_path
-vim.g.t2 = is_win and 1 or 0
-
 if fn.empty(fn.glob(install_path)) > 0 then
   packer_bootstrap = fn.system({'git', 'clone', '--depth', '1', packer_url, install_path})
 end
@@ -95,7 +92,7 @@ end
 
 
 cmd [[packadd packer.nvim]]
-require('packer').startup({function()
+require('packer').startup { function()
   use 'wbthomason/packer.nvim'
 
   use {
@@ -114,17 +111,42 @@ require('packer').startup({function()
     'nvim-treesitter/nvim-treesitter',
     run = function()
       require('nvim-treesitter.install').update({ with_sync = true })
-    end,
+    end
+  }
+
+  use {
+   'mfussenegger/nvim-treehopper',
+    requires = {{ 'nvim-treesitter/nvim-treesitter' }},
     config = function()
-      require('nvim-treesitter.configs').setup {
-        sync_install = false,
-        auto_install = true,
-        highlight = { enable = vim.fn.has'g:vscode' == 0 }
+      require('tsht').config.hint_keys = {
+        "A","S","D","F","G","H","J","K","L"
       }
     end
   }
 
+  use {
+    'RRethy/nvim-treesitter-endwise',
+    requires = {{ 'nvim-treesitter/nvim-treesitter' }},
+  }
+
+  use {
+    'kylechui/nvim-surround',
+    config = function()
+      require('nvim-surround').setup {
+        aliases = {
+          ['Q'] = {[[']], [["]], [[`]]},
+          ['P'] = {'>', '}', ')', ']'},
+          ['S'] = {[[']], [["]], [[`]], '>', '}', ')', ']'}
+        }
+      }
+    end
+  }
+
+
+
   if is_code then return nil end
+
+
 
   use 'gpanders/editorconfig.nvim'
 
@@ -133,38 +155,84 @@ require('packer').startup({function()
     'b3nj5m1n/kommentary',
     config = function()
       require('kommentary.config').configure_language("default", {
+        prefer_single_line_comments = true,
         ignore_whitespace = true
       })
     end
   }
 
-  use {
-    'lewis6991/gitsigns.nvim',
-    config = function()
-      require('gitsigns').setup()
-    end
-  }
+ vim.opt.signcolumn = 'yes'
+ use {
+   'lewis6991/gitsigns.nvim',
+   requires = {{ 'nvim-lua/plenary.nvim' }},
+   config = function()
+     require('gitsigns').setup {
+       signs = {
+         add = { text = '|' }, -- green
+         change = { text = '|' }, -- blue
+         delete = { text = '_' }, -- red
+         topdelete = { text = '^' }, -- red
+         changedelete = { text = '+' }, -- blue
+       }
+     }
+   end
+ }
 
   use {
     'RRethy/nvim-base16',
     requires = {{'nvim-treesitter/nvim-treesitter'}},
   }
 
+  vim.opt.signcolumn = 'yes'
   use {
     'windwp/nvim-autopairs',
     requires = {{'nvim-treesitter/nvim-treesitter'}},
     config = function()
-      local Rule = require('nvim-autopairs.rule')
-      local Cond = require('nvim-autopairs.conds')
-      require('nvim-autopairs').setup {
-        chars = { "{", "[", "(", [["]], [[']], [[`]] },
+      local autopairs = require('nvim-autopairs')
+      local rule = require('nvim-autopairs.rule')
+      local cond = require('nvim-autopairs.conds')
+      local endwise = require('nvim-autopairs.ts-rule').endwise
+      autopairs.setup { check_ts = true }
+      autopairs.add_rules {
+        -- add space between parentheses
+        rule(' ', ' '):with_pair(function(opts)
+          local p = opts.line:sub(opts.col - 1, opts.col)
+          return vim.tbl_contains({'()', '{}', '[]'}, p)
+        end),
+        rule('(', ')')
+          :with_pair(function() return false end)
+          :with_move(function(opts)
+            return opts.prev_char:match('.%)') ~= nil
+          end)
+          :use_key(')'),
+        rule('{', '}')
+          :with_pair(function() return false end)
+          :with_move(function(opts)
+            return opts.prev_char:match('.%}') ~= nil
+          end)
+          :use_key('}'),
+        rule('[', ']')
+          :with_pair(function() return false end)
+          :with_move(function(opts)
+            return opts.prev_char:match('.%]') ~= nil
+          end)
+          :use_key(']'),
+        -- for lua
+        rule('[[', ']]', 'lua'),
+        -- for fish shell
+        endwise('if.*$', 'end', 'fish', 'if_statement'),
+        endwise('for.*$', 'end', 'fish', 'for_statement'),
+        endwise('begin$', 'end', 'fish', 'begin_statement'),
+        endwise('while.*$', 'end', 'fish', 'while_statement'),
+        endwise('switch.*$', 'end', 'fish', 'switch_statement'),
+        endwise('function.*$', 'end', 'fish', 'function_definition'),
       }
     end
   }
 
   use {
     'nvim-telescope/telescope.nvim',
-    tag = '0.1.0',
+    branch = '0.1.x',
     requires = {
       { 'nvim-lua/plenary.nvim' },
       { 'nvim-treesitter/nvim-treesitter' },
@@ -180,7 +248,7 @@ require('packer').startup({function()
         options = {
           icons_enabled = true,
           theme = 'auto',
-          component_separators = '|',
+          component_separators = '',
           section_separators = '',
         },
         sections = {
@@ -207,9 +275,9 @@ require('packer').startup({function()
   if packer_bootstrap then
     require('packer').sync()
   end
-end
-})
 
+end
+}
 
 -- plugins keymap
 key("n", "<Space>", "<Nop>", {})
@@ -217,7 +285,31 @@ if has_installed("hop.nvim") then
   key("n", "<Space><Space>", ':<C-u>HopPattern<CR>', {})
 end
 
-if not is_code then
+if not is_code and not packer_bootstrap then
+
+  if has_installed('nvim-treesitter') then
+    require('nvim-treesitter.configs').setup {
+      sync_install = false,
+      auto_install = true,
+      ignore_install = { 'help', 'TelescopePrompt' },
+      highlight = {
+        enable = not is_code,
+        disable = { 'help', 'TelescopePrompt' }
+      },
+      endwise = {
+        enable = true,
+      }
+    }
+  end
+
+  if has_installed('nvim-treehopper') then
+    key("o", 't', function() require('tsht').nodes() end, {noremap=false, silent=true})
+    key("x", 't', function() require('tsht').nodes() end, {noremap=true,  silent=true})
+    key("n", 't', function() require('tsht').move{side='start'} end, {noremap=true, silent=true})
+    key("n", 't', function() require('tsht').move{side='start'} end, {noremap=true, silent=true})
+    key("n", 'T', function() require('tsht').move{side='end'} end, {noremap=true, silent=true})
+    key("n", 'T', function() require('tsht').move{side='end'} end, {noremap=true, silent=true})
+  end
 
   if has_installed('kommentary.nvim') then
     key("n", "--", "<Plug>kommentary_line_default", {})
@@ -226,19 +318,31 @@ if not is_code then
   end
 
   if has_installed('telescope.nvim') then
-    key("n", "<Space>b", "<Cmd>Telescope buffers theme=get_dropdown<CR>", {noremap=true})
-    key("n", "<Space>c", "<Cmd>Telescope colorscheme theme=get_dropdown<CR>", {noremap=true})
-    key("n", "<Space>f", "<Cmd>Telescope find_files hidden=true theme=get_dropdown<CR>", {noremap=true})
-    key("n", "<Space>g", "<Cmd>Telescope git_files theme=get_dropdown<CR>", {noremap=true})
-    key("n", "<Space>j", "<Cmd>Telescope current_buffer_fuzzy_find theme=get_dropdown<CR>", {noremap=true})
-    key("n", "<Space>m", "<Cmd>Telescope oldfiles theme=get_dropdown<CR>", {noremap=true})
-    key("n", "<Space>t", "<Cmd>Telescope treesitter theme=get_dropdown<CR>", {noremap=true})
+    local pickers = {
+      { key = 'b', fn = function(x, y) x.buffers(y)     end},
+      { key = 'c', fn = function(x, y) x.colorscheme(y) end},
+      { key = 'f', fn = function(x, y) x.find_files(y)  end},
+      { key = 'g', fn = function(x, y) x.git_files(y)   end},
+      { key = 'j', fn = function(x, y) x.current_buffer_fuzzy_find(y) end},
+      { key = 'k', fn = function(x, y) x.keymaps(y)     end},
+      { key = 'm', fn = function(x, y) x.oldfiles(y)    end},
+      { key = 't', fn = function(x, y) x.treesitter(y)  end},
+    }
+    for _, p in pairs(pickers) do
+      key('n', '<Space>'..p.key, function()
+        p.fn(require('telescope.builtin'), require('telescope.themes').get_dropdown {
+          borderchars = {
+            prompt =  {'', '', '', '', '', '', '', ''},
+            results = {'', '', '', '', '', '', '', ''},
+            preview = {'', '', '', '', '', '', '', ''},
+          }
+        })
+      end, { noremap = true })
+    end
   end
 
   if has_installed('nvim-base16') then
-    require('base16-colorscheme').with_config {
-      telescope = false
-    }
+    require('base16-colorscheme').with_config { telescope = true }
     local scheme = is_win and 'onedark' or 'solarized-dark'
     vim.cmd("color base16-"..scheme)
   end
