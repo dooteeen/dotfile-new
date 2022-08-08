@@ -40,7 +40,7 @@ opt.whichwrap = 'b,s,h,l,<,>,[,]'
 opt.backspace = 'indent,eol,start'
 opt.fileformats = 'dos,unix,mac'
 
-opt.helplang = 'ja', 'en'
+opt.helplang = 'ja','en'
 
 opt.updatetime = 300
 opt.signcolumn = 'yes'
@@ -61,6 +61,9 @@ key("n", "<", "<h", {noremap = true})
 key("n", ">", ">l", {noremap = true})
 key("v", "<", "<gv", {noremap = true})
 key("v", ">", ">gv", {noremap = true})
+
+key("n", "<Tab>",   "<C-w>w", {noremap = true})
+key("n", "<S-Tab>", "<C-w>W", {noremap = true})
 
 
 
@@ -111,7 +114,21 @@ require('packer').startup { function()
     'nvim-treesitter/nvim-treesitter',
     run = function()
       require('nvim-treesitter.install').update({ with_sync = true })
-    end
+    end,
+    config = function()
+      require('nvim-treesitter.configs').setup {
+        sync_install = false,
+        auto_install = true,
+        ignore_install = { 'help', 'TelescopePrompt' },
+        highlight = {
+          enable = not is_code,
+          disable = { 'help', 'TelescopePrompt' },
+        },
+        endwise = {
+          enable = true,
+        }
+      }
+    end,
   }
 
   use {
@@ -183,6 +200,11 @@ require('packer').startup { function()
     requires = {{'nvim-treesitter/nvim-treesitter'}},
   }
 
+  use {
+    'nvim-treesitter/playground'
+  }
+
+
   vim.opt.signcolumn = 'yes'
   use {
     'windwp/nvim-autopairs',
@@ -190,7 +212,7 @@ require('packer').startup { function()
     config = function()
       local autopairs = require('nvim-autopairs')
       local rule = require('nvim-autopairs.rule')
-      local cond = require('nvim-autopairs.conds')
+      -- local cond = require('nvim-autopairs.conds')
       local endwise = require('nvim-autopairs.ts-rule').endwise
       autopairs.setup { check_ts = true }
       autopairs.add_rules {
@@ -272,6 +294,16 @@ require('packer').startup { function()
     end
   }
 
+  use {
+    'mfussenegger/nvim-lint',
+    config = function()
+      require('lint').linters_by_ft = {
+        lua  = {'luacheck'},
+        yaml = {'yamllint'},
+      }
+    end
+  }
+
   if packer_bootstrap then
     require('packer').sync()
   end
@@ -288,18 +320,6 @@ end
 if not is_code and not packer_bootstrap then
 
   if has_installed('nvim-treesitter') then
-    require('nvim-treesitter.configs').setup {
-      sync_install = false,
-      auto_install = true,
-      ignore_install = { 'help', 'TelescopePrompt' },
-      highlight = {
-        enable = not is_code,
-        disable = { 'help', 'TelescopePrompt' }
-      },
-      endwise = {
-        enable = true,
-      }
-    }
   end
 
   if has_installed('nvim-treehopper') then
@@ -342,9 +362,29 @@ if not is_code and not packer_bootstrap then
   end
 
   if has_installed('nvim-base16') then
-    require('base16-colorscheme').with_config { telescope = true }
-    local scheme = is_win and 'onedark' or 'solarized-dark'
-    vim.cmd("color base16-"..scheme)
+    local base16 = require('base16-colorscheme')
+    base16.with_config { telescope = true }
+    local using_scheme = is_win and 'onedark' or 'solarized-dark'
+    cmd("color base16-"..using_scheme)
+    -- overwrite colorscheme
+    api.nvim_set_hl(0, 'VertSplit', { fg = base16.colors.base02, bg = nil })
+    local color_assigns = {
+      { target = 'TSField', reference = 'TSVariable' },
+      { target = 'TSParameter', reference = 'TSVariable' },
+      { target = 'TSPunctDelimiter', reference = 'TSText' },
+      { target = 'TSStringRegex', reference = 'TSConstant' },
+    }
+    for _, p in pairs(color_assigns) do
+      api.nvim_set_hl(0, p.target, { link = p.reference })
+    end
+  end
+
+  if has_installed('nvim-lint') then
+    api.nvim_create_autocmd({ 'BufWritePost' }, {
+      callback = function()
+        require('lint').try_lint()
+      end
+    })
   end
 
 end

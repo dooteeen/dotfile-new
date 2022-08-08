@@ -1,0 +1,25 @@
+[include]
+  path = ~/.gitconfig_user
+
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
+
+[core]
+  autocrlf = false
+
+[pager]
+  diff = delta
+  log = delta
+  reflog = delta
+  show = delta
+
+[delta]
+  line-numbers = true
+  side-by-side = true
+  {{- if eq .chezmoi.os "windows" }}
+  syntax-theme = OneHalfDark
+  {{- else }}
+  syntax-theme = Solarized (dark)
+  {{- end }}
+
+# vim: set filetype=gitconfig :
