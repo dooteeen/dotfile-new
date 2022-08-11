@@ -1,0 +1,23 @@
+add_newline = true
+
+[character]
+success_symbol = '[\$](bold white)'
+error_symbol = '[\$](bold red)'
+vimcmd_replace_one_symbol = '[r](bold green)'
+vimcmd_replace_symbol = '[R](bold green)'
+vimcmd_visual_symbol = '[V](bold purple)'
+
+[directory]
+truncation_length = 1
+use_os_path_sep = false
+
+[cmd_duration]
+disabled = true
+
+[git_metrics]
+disabled = false
+
+[git_status]
+windows_starship = '/mnt/c/Users/{{.chezmoi.username}}/scoop/apps/starship/current/starship.exe'
+
+# vim: set filetype=toml :

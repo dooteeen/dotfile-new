@@ -319,9 +319,6 @@ end
 
 if not is_code and not packer_bootstrap then
 
-  if has_installed('nvim-treesitter') then
-  end
-
   if has_installed('nvim-treehopper') then
     key("o", 't', function() require('tsht').nodes() end, {noremap=false, silent=true})
     key("x", 't', function() require('tsht').nodes() end, {noremap=true,  silent=true})
@@ -371,6 +368,7 @@ if not is_code and not packer_bootstrap then
     local color_assigns = {
       { target = 'TSField', reference = 'TSVariable' },
       { target = 'TSParameter', reference = 'TSVariable' },
+      { target = 'TSConstructor', reference = 'TSText' },
       { target = 'TSPunctDelimiter', reference = 'TSText' },
       { target = 'TSStringRegex', reference = 'TSConstant' },
     }
@@ -385,6 +383,9 @@ if not is_code and not packer_bootstrap then
         require('lint').try_lint()
       end
     })
+    require('lint.linters.luacheck').args = {
+      '--only', '0'
+    }
   end
 
 end
