@@ -47,24 +47,30 @@ opt.signcolumn = 'yes'
 
 
 
-key("n", "gj", "j",  {noremap = true})
-key("n", "j",  "gj", {noremap = true})
-key("n", "gk", "k",  {noremap = true})
-key("n", "k",  "gk", {noremap = true})
+key("n", "<Space>", "<Nop>", {})
 
-key("n", "q", "$", {noremap = true})
-key("n", "Q", "q", {noremap = true})
+key("n", "gj", "j",  { noremap = true })
+key("n", "j",  "gj", { noremap = true })
+key("n", "gk", "k",  { noremap = true })
+key("n", "k",  "gk", { noremap = true })
 
-key("n", "<", "<h", {noremap = true})
-key("n", ">", ">l", {noremap = true})
-key("v", "<", "<gv", {noremap = true})
-key("v", ">", ">gv", {noremap = true})
+key("n", "q", "$", { noremap = true })
+key("n", "Q", "q", { noremap = true })
+key("n", "t", "0", { noremap = true })
+key("n", "T", "^", { noremap = true })
+key("v", "t", "0", { noremap = true })
+key("v", "T", "^", { noremap = true })
 
-key("n", "<Tab>",   "<C-w>w", {noremap = true})
-key("n", "<S-Tab>", "<C-w>W", {noremap = true})
+key("n", "<", "<h",  { noremap = true })
+key("n", ">", ">l",  { noremap = true })
+key("v", "<", "<gv", { noremap = true })
+key("v", ">", ">gv", { noremap = true })
 
-key("n", "(", ":bn<CR>", {noremap = true, silent = true})
-key("n", ")", ":bp<CR>", {noremap = true, silent = true})
+key("n", "<Tab>",   "<C-w>w", { noremap = true })
+key("n", "<S-Tab>", "<C-w>W", { noremap = true })
+
+key("n", "(", ":bn<CR>", { noremap = true, silent = true })
+key("n", ")", ":bp<CR>", { noremap = true, silent = true })
 
 
 
@@ -152,9 +158,9 @@ require('packer').startup { function()
     config = function()
       require('nvim-surround').setup {
         aliases = {
-          ['Q'] = {[[']], [["]], [[`]]},
-          ['P'] = {'>', '}', ')', ']'},
-          ['S'] = {[[']], [["]], [[`]], '>', '}', ')', ']'}
+          ['Q'] = { [[']], [["]], [[`]] },
+          ['P'] = { '>', '}', ')', ']' },
+          ['S'] = { [[']], [["]], [[`]], '>', '}', ')', ']' }
         }
       }
     end
@@ -209,7 +215,7 @@ require('packer').startup { function()
   vim.opt.signcolumn = 'yes'
   use {
     'windwp/nvim-autopairs',
-    requires = {{'nvim-treesitter/nvim-treesitter'}},
+    requires = {{ 'nvim-treesitter/nvim-treesitter' }},
     config = function()
       local autopairs = require('nvim-autopairs')
       local rule = require('nvim-autopairs.rule')
@@ -275,18 +281,18 @@ require('packer').startup { function()
           section_separators = '',
         },
         sections = {
-          lualine_a = {'mode'},
-          lualine_b = {'filename'},
+          lualine_a = { 'mode' },
+          lualine_b = { 'filename' },
           lualine_c = {},
           lualine_x = {},
-          lualine_y = {'encoding', 'fileformat', 'filetype'},
-          lualine_z = {'location'},
+          lualine_y = { 'encoding', 'fileformat', 'filetype' },
+          lualine_z = { 'location' },
         },
         inactive_sections = {
           lualine_a = {},
           lualine_b = {},
-          lualine_c = {'filename'},
-          lualine_x = {'location'},
+          lualine_c = { 'filename' },
+          lualine_x = { 'location' },
           lualine_y = {},
           lualine_z = {},
         },
@@ -299,8 +305,8 @@ require('packer').startup { function()
     'mfussenegger/nvim-lint',
     config = function()
       require('lint').linters_by_ft = {
-        lua  = {'luacheck'},
-        yaml = {'yamllint'},
+        lua  = { 'luacheck' },
+        yaml = { 'yamllint' },
       }
     end
   }
@@ -313,21 +319,8 @@ end
 }
 
 -- plugins keymap
-key("n", "<Space>", "<Nop>", {})
-if has_installed("hop.nvim") then
-  key("n", "<Space><Space>", ':<C-u>HopPattern<CR>', {})
-end
 
 if not is_code and not packer_bootstrap then
-
-  if has_installed('nvim-treehopper') then
-    key("o", 't', function() require('tsht').nodes() end, {noremap=false, silent=true})
-    key("x", 't', function() require('tsht').nodes() end, {noremap=true,  silent=true})
-    key("n", 't', function() require('tsht').move{side='start'} end, {noremap=true, silent=true})
-    key("n", 't', function() require('tsht').move{side='start'} end, {noremap=true, silent=true})
-    key("n", 'T', function() require('tsht').move{side='end'} end, {noremap=true, silent=true})
-    key("n", 'T', function() require('tsht').move{side='end'} end, {noremap=true, silent=true})
-  end
 
   if has_installed('kommentary.nvim') then
     key("n", "--", "<Plug>kommentary_line_default", {})
@@ -337,14 +330,13 @@ if not is_code and not packer_bootstrap then
 
   if has_installed('telescope.nvim') then
     local pickers = {
-      { key = 'b', fn = function(x, y) x.buffers(y)     end},
-      { key = 'c', fn = function(x, y) x.colorscheme(y) end},
-      { key = 'f', fn = function(x, y) x.find_files(y)  end},
-      { key = 'g', fn = function(x, y) x.git_files(y)   end},
-      { key = 'j', fn = function(x, y) x.current_buffer_fuzzy_find(y) end},
-      { key = 'k', fn = function(x, y) x.keymaps(y)     end},
-      { key = 'm', fn = function(x, y) x.oldfiles(y)    end},
-      { key = 't', fn = function(x, y) x.treesitter(y)  end},
+      { key = 'b', fn = function(x, y) x.buffers(y)     end },
+      { key = 'c', fn = function(x, y) x.colorscheme(y) end },
+      { key = 'f', fn = function(x, y) x.find_files(y)  end },
+      { key = 'g', fn = function(x, y) x.git_files(y)   end },
+      { key = 'j', fn = function(x, y) x.current_buffer_fuzzy_find(y) end },
+      { key = 'k', fn = function(x, y) x.keymaps(y)     end },
+      { key = 'm', fn = function(x, y) x.oldfiles(y)    end },
     }
     for _, p in pairs(pickers) do
       key('n', '<Space>'..p.key, function()
@@ -356,6 +348,13 @@ if not is_code and not packer_bootstrap then
           }
         })
       end, { noremap = true })
+    end
+    if has_installed("hop.nvim") then
+      key("n", "<Space>h", ':<C-u>HopPattern<CR>', {})
+    end
+    if has_installed('nvim-treehopper') then
+      key("n", '<Space>t', function() require('tsht').move{side='start'} end, { noremap = true })
+      key("n", '<Space>T', function() require('tsht').move{side='end'}   end, { noremap = true })
     end
   end
 
