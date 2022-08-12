@@ -54,8 +54,6 @@ key("n", "k",  "gk", {noremap = true})
 
 key("n", "q", "$", {noremap = true})
 key("n", "Q", "q", {noremap = true})
-key("v", "q", "$", {noremap = true})
-key("v", "Q", "q", {noremap = true})
 
 key("n", "<", "<h", {noremap = true})
 key("n", ">", ">l", {noremap = true})
@@ -64,6 +62,9 @@ key("v", ">", ">gv", {noremap = true})
 
 key("n", "<Tab>",   "<C-w>w", {noremap = true})
 key("n", "<S-Tab>", "<C-w>W", {noremap = true})
+
+key("n", "(", ":bn<CR>", {noremap = true, silent = true})
+key("n", ")", ":bp<CR>", {noremap = true, silent = true})
 
 
 

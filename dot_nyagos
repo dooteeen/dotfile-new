@@ -1,10 +1,33 @@
 -- vim: ft=lua
 nyagos.prompt = function(this)
-	if nyagos.which('starship') then
-		local starship = nyagos.eval('starship prompt 2> nul') .. '$e[37;0m' .. ' '
-		prompt = '\n' .. starship
-		return nyagos.default_prompt(prompt, "")
-	else
-		return nyagos.default_prompt("", "")
-	end
+  if nyagos.which('starship') then
+    local starship = nyagos.eval('starship prompt 2> nul') .. '$e[37;0m' .. ' '
+    prompt = '\n' .. starship
+    return nyagos.default_prompt(prompt, "")
+  else
+    return nyagos.default_prompt("", "")
+  end
 end
+
+nyagos.alias.mv = 'move $*'
+nyagos.alias.cm = 'chezmoi $*'
+nyagos.alias.config = 'cd $(chezmoi source-path)'
+nyagos.alias.root = 'cd $(git rev-parse --show-toplevel)'
+
+function complete_chezmoi(args)
+  if #args == 2 then
+    return {
+      'add', 'apply', 'archive', 'cat', 'cd', 'chattr',
+      'completion', 'data', 'decrypt', 'diff', 'doctor', 'dump',
+      'edit', 'edit-config', 'encrypt', 'execute-template', 'forget',
+      'generate', 'git', 'help', 'ignored', 'import', 'init',
+      'licence', 'managed', 'merge', 'merge-all', 'purge', 're-add',
+      'remove', 'secret', 'source-path', 'state', 'status', 'target-path',
+      'unmanaged', 'update', 'upgrade', 'verify',
+    }
+  end
+  return nil
+end
+
+nyagos.complete_for.chezmoi = complete_chezmoi
+nyagos.complete_for.cm = complete_chezmoi

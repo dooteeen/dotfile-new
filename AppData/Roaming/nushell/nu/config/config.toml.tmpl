@@ -1,0 +1,100 @@
+complete_from_path = true
+ctrlc_exit = false
+disable_table_indexes = false
+edit_mode = "vi" # vi, emacs
+filesize_format = "kB" # can be b, kb, kib, mb, mib, gb, gib, etc
+filesize_metric = true
+nonzero_exit_errors = true
+pivot_mode = "auto" # auto, always, never
+rm_always_trash = true
+skip_welcome_message = true
+table_mode = "compact" # basic, compact, compact_double, light, thin, with_love, rounded, reinforced, heavy, none, other
+startup = [
+    # aliases
+    "alias cls = clear",
+    "alias ll  = ls",
+    "alias la  = ls --long",
+    "alias cz  = chezmoi"
+    # zoxide
+    "mkdir ~/.config/zoxide",
+    "zoxide init nushell --hook prompt --cmd j | save ~/.config/zoxide/zoxide.nu",
+    "source ~/.config/zoxide/zoxide.nu",
+    # starship prompt
+    "mkdir ~/AppData/Roaming/nushell/nu/starship",
+    "starship init nu | save ~/AppData/Roaming/nushell/nu/starship/init.nu",
+    "source ~/AppData/Roaming/nushell/nu/starship/init.nu",
+    ]
+prompt = "starship_prompt"
+
+# for each of the options in the color_config section, you are able to set
+# the color alone or with one of the following attributes.
+# color, abbreviation
+# green  g
+# red    r
+# blue   u
+# black  b
+# yellow y
+# purple p
+# cyan   c
+# white  w
+# attribute, abbreviation
+# bold       b
+# underline  u
+# italic     i
+# dimmed     d
+# reverse    r
+# abbreviated: green bold = gb, red underline = ru, blue dimmed = ud
+# or verbose: green_bold, red_underline, blue_dimmed
+
+[color_config]
+header_align = "l"
+header_bold = false
+header_color = "dw"
+index_color = "dw"
+leading_trailing_space_bg = "w"
+primitive_binary = "c"
+primitive_boolean = "y"
+primitive_columnpath = "r"
+primitive_date = "y"
+primitive_decimal = "y"
+primitive_duration = "w"
+primitive_filesize = "y"
+primitive_int = "y"
+primitive_line = "g"
+primitive_path = "r"
+primitive_pattern = "dy"
+primitive_range = "w"
+primitive_string = "g"
+separator_color = "dw"
+
+[line_editor]
+auto_add_history = true
+bell_style = "audible" # audible, none, visible
+color_mode = "enabled" # enabled, forced, disabled
+completion_prompt_limit = 100
+completion_type = "circular" # circular, list, fuzzy
+history_duplicates = "ignoreconsecutive" # alwaysadd,ignoreconsecutive
+history_ignore_space = false
+keyseq_timeout_ms = 500 # ms
+max_history_size = 100000
+tab_stop = 2
+
+[textview]
+colored_output = true
+grid = false
+header = true
+line_numbers = true
+paging_mode = "QuitIfOneScreen" # Always, QuitIfOneScreen, Never
+snip = true
+tab_width = 2
+term_width = "default" # "default" or a number
+true_color = true
+use_italics = true
+vcs_modification_markers = true
+wrapping_mode = "NoWrapping" # Character, NoWrapping
+
+# To add path and env do this
+# > config set path $nu.path
+# > config set env $nu.env
+
+# vim: set filetype=toml :
