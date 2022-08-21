@@ -5,7 +5,10 @@
   insteadOf = https://github.com/
 
 [core]
-  autocrlf = false
+  autocrlf = input
+
+[alias]
+  find-crlf = grep --cached -I $"\\r"
 
 [pager]
   diff = delta

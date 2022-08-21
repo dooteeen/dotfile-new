@@ -10,9 +10,13 @@ nyagos.prompt = function(this)
 end
 
 nyagos.alias.mv = 'move $*'
+nyagos.alias.rm = 'del $*'
 nyagos.alias.cm = 'chezmoi $*'
+nyagos.alias.sp = 'scoop $*'
 nyagos.alias.config = 'cd $(chezmoi source-path)'
 nyagos.alias.root = 'cd $(git rev-parse --show-toplevel)'
+nyagos.alias.yq = 'dasel -w json | jq $* | dasel -r json -w yaml'
+nyagos.alias.tq = 'dasel -w json | jq $* | dasel -r json -w toml'
 
 function complete_chezmoi(args)
   if #args == 2 then
@@ -25,9 +29,25 @@ function complete_chezmoi(args)
       'remove', 'secret', 'source-path', 'state', 'status', 'target-path',
       'unmanaged', 'update', 'upgrade', 'verify',
     }
-  end
+  else return nil end
   return nil
+end
+
+function complete_scoop(args)
+  if #args == 2 or #args[-1] == 'help' then
+    return {
+      'alias', 'bucket', 'cache', 'cat', 'checkup', 'cleanup',
+      'config', 'create', 'depends', 'download', 'export',
+      'help', 'hold', 'home', 'import', 'info', 'install',
+      'list', 'prefix', 'reset', 'search', 'shim', 'status',
+      'unhold', 'uninstall', 'update', 'virustotal', 'which',
+    }
+  elseif #args == 1 and args[-1] == 'alias' then
+    return 1
+  else return nil end
 end
 
 nyagos.complete_for.chezmoi = complete_chezmoi
 nyagos.complete_for.cm = complete_chezmoi
+nyagos.complete_for.scoop = complete_scoop
+nyagos.complete_for.sp = complete_scoop
