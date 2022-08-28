@@ -267,10 +267,10 @@ require('packer').startup { function()
         manage_nvim_cmp = true,
         call_servers = 'local',
         sign_icons = {
-          error = 'E',
-          warn  = 'W',
-          hint  = 'h',
-          info  = 'i',
+          error = '!',
+          warn  = '!',
+          hint  = '?',
+          info  = '?',
         }
       }
 
@@ -396,13 +396,8 @@ if not packer_bootstrap then
   end
 
   if is_plugged('hop.nvim') then
-    key('n', '<Space>h', ':<C-u>HopPattern<CR>', {})
-    key('n', '<Space>l', ':<C-u>HopChar1<CR>', {})
-  end
-
-  if is_plugged('nvim-treehopper') then
-    key('n', '<Space>t', function() require('tsht').move{side='start'} end, { noremap = true })
-    key('n', '<Space>T', function() require('tsht').move{side='end'}   end, { noremap = true })
+    key('n', '<Space>o', ':<C-u>HopChar1<CR>', {})
+    key('n', '<Space>p', ':<C-u>HopPattern<CR>', {})
   end
 
   if is_plugged('telescope.nvim') then
@@ -413,7 +408,7 @@ if not packer_bootstrap then
       { key = 'g', fn = function(x, y) x.git_files(y)   end },
       { key = 'j', fn = function(x, y) x.current_buffer_fuzzy_find(y) end },
       { key = 'k', fn = function(x, y) x.keymaps(y)     end },
-      { key = 'l', fn = function(x, y) x.filetype(y)    end },
+      { key = 'l', fn = function(x, y) x.diagnostics(y) end },
       { key = 'm', fn = function(x, y) x.oldfiles(y)    end },
     }
     for _, p in pairs(pickers) do
@@ -458,10 +453,10 @@ if not packer_bootstrap then
       api.nvim_set_hl(0, 'TSPunctDelimiter', { link = 'TSText' })
       api.nvim_set_hl(0, 'TSStringRegex',    { link = 'TSConstant' })
       -- overwrite colorscheme ... nvim-lspconfig
-      api.nvim_set_hl(0, 'DiagnosticError', { fg = fg, bg = colors.base08 })
-      api.nvim_set_hl(0, 'DiagnosticWarn',  { fg = colors.base00, bg = colors.base09 })
-      api.nvim_set_hl(0, 'DiagnosticHint',  { fg = fg, bg = colors.base0C })
-      api.nvim_set_hl(0, 'DiagnosticInfo',  { fg = fg, bg = colors.base04 })
+      api.nvim_set_hl(0, 'DiagnosticSignError', { fg = colors.base08, bold = true })
+      api.nvim_set_hl(0, 'DiagnosticSignWarn',  { fg = colors.base09, bold = true })
+      api.nvim_set_hl(0, 'DiagnosticSignHint',  { fg = colors.base0C, bold = true })
+      api.nvim_set_hl(0, 'DiagnosticSignInfo',  { fg = colors.base04, bold = true })
     end
     api.nvim_create_augroup('base16_posthook', { clear = true })
     api.nvim_create_autocmd({ 'ColorScheme' }, {
