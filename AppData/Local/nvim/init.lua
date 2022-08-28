@@ -5,9 +5,9 @@ local fn  = vim.fn
 local key = vim.keymap.set
 local opt = vim.opt
 
-is_code = (fn.exists'g:vscode' == 1)
-is_win  = (fn.has'win32' == 1)
-
+is_code = fn.exists'g:vscode' == 1
+is_win  = fn.has'win32' == 1
+is_gui  = env.TERM == nil
 
 
 cmd [[language C]]
@@ -86,16 +86,7 @@ key("n", "(", ":bp<CR>", { noremap = true, silent = true })
 key("n", ")", ":bn<CR>", { noremap = true, silent = true })
 
 key("n", "<Space>", "<Nop>", {})
-key("n", "~", "<Nop>", {})
-if not is_code then
-  if is_win then
-   default_term = "nyagos"
-  else
-   default_term = "fish"
-  end
-  key("n", "<Space>`", ":<C-u>tabnew | terminal "..default_term.."<CR>", { noremap = true })
-  key("n", "<Space>~", ":<C-u>tabnew | terminal "..default_term.."<CR>", { noremap = true })
-end
+key("n", "<CR>", ":<C-u>noh<CR>", {})
 
 
 
@@ -320,6 +311,22 @@ require('packer').startup { function()
   }
 
   use {
+    'xiyaowong/nvim-transparent',
+    requires = {{ 'RRethy/nvim-base16' }},
+    config = function()
+      require('transparent').setup {
+        enable = not is_gui,
+        extra_groups = {
+          'VertSplit',
+          'GitGutterChange',
+          'GitGutterAdd',
+          'GitGutterDelete',
+        }
+      }
+    end
+  }
+
+  use {
     'nvim-treesitter/playground'
   }
 
@@ -453,10 +460,10 @@ if not packer_bootstrap then
       api.nvim_set_hl(0, 'TSPunctDelimiter', { link = 'TSText' })
       api.nvim_set_hl(0, 'TSStringRegex',    { link = 'TSConstant' })
       -- overwrite colorscheme ... nvim-lspconfig
-      api.nvim_set_hl(0, 'DiagnosticSignError', { fg = colors.base08, bold = true })
+      api.nvim_set_hl(0, 'DiagnosticSignError', { fg = bg, bg = colors.base08, bold = true })
       api.nvim_set_hl(0, 'DiagnosticSignWarn',  { fg = colors.base09, bold = true })
-      api.nvim_set_hl(0, 'DiagnosticSignHint',  { fg = colors.base0C, bold = true })
-      api.nvim_set_hl(0, 'DiagnosticSignInfo',  { fg = colors.base04, bold = true })
+      api.nvim_set_hl(0, 'DiagnosticSignHint',  { fg = colors.base03, bold = true })
+      api.nvim_set_hl(0, 'DiagnosticSignInfo',  { fg = colors.base03, bold = true })
     end
     api.nvim_create_augroup('base16_posthook', { clear = true })
     api.nvim_create_autocmd({ 'ColorScheme' }, {
@@ -464,7 +471,7 @@ if not packer_bootstrap then
       callback = postfix_color,
     })
     base16.with_config { telescope = true }
-    cmd("color base16-"..using_scheme)
+    vim.cmd("color base16-"..using_scheme)
   end
 
 end

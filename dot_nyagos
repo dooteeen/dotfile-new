@@ -1,5 +1,6 @@
 -- vim: ft=lua
 nyagos.completion_slash = true
+nyagos.env['TERM'] = 'nyagos'
 
 nyagos.prompt = function(this)
   if nyagos.which('starship') then
