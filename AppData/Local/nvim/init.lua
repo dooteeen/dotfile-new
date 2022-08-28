@@ -62,13 +62,9 @@ key("n", "S", "<Nop>", { noremap = true, silent = true })
 key("v", "s", "<Nop>", { noremap = true, silent = true })
 key("v", "S", "<Nop>", { noremap = true, silent = true })
 
-key("n", "q", "$",     { noremap = true, silent = true })
-key("n", "C", "<Nop>", { noremap = true, silent = true })
-key("o", "q", "$",     { noremap = true, silent = true })
-key("o", "C", "<Nop>", { noremap = true, silent = true })
-key("v", "q", "$",     { noremap = true, silent = true })
-key("v", "C", "<Nop>", { noremap = true, silent = true })
-
+key("n", "q", "$", { noremap = true, silent = true })
+key("o", "q", "$", { noremap = true, silent = true })
+key("v", "q", "$", { noremap = true, silent = true })
 key("n", "Q", "q", { noremap = true, silent = true })
 
 key("n", "t", "0", { noremap = true, silent = true })
@@ -93,9 +89,9 @@ key("n", "<Space>", "<Nop>", {})
 key("n", "~", "<Nop>", {})
 if not is_code then
   if is_win then
-    default_term = "nyagos"
+   default_term = "nyagos"
   else
-    default_term = "fish"
+   default_term = "fish"
   end
   key("n", "<Space>`", ":<C-u>tabnew | terminal "..default_term.."<CR>", { noremap = true })
   key("n", "<Space>~", ":<C-u>tabnew | terminal "..default_term.."<CR>", { noremap = true })
@@ -130,9 +126,9 @@ if fn.empty(fn.glob(install_path)) > 0 then
   packer_bootstrap = fn.system({'git', 'clone', '--depth', '1', packer_url, install_path})
 end
 
-local has_installed = function(pkg)
-  local root = fn.stdpath('data') .. '/site/pack/packer/'
-  return fn.glob(root..'start/'..pkg) or fn.glob(root..'opt/'..pkg)
+local is_plugged = function(pkg)
+  local root = vim.fn.stdpath('data') .. '/site/pack/packer'
+  return vim.fn.glob(root..'start/') or vim.fn.glob(root..'opt/'..pkg)
 end
 
 
@@ -237,52 +233,54 @@ require('packer').startup { function()
   if is_code then return nil end
 
 
+  -- for LSP and complition
   use {
-    'neovim/nvim-lspconfig',
-    requires = {{ 'williamboman/mason-lspconfig.nvim' }},
-    config = function()
-      local on_attach = function(client, bufnr)
-        vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'vim.lua.vim.lsp.omnifunc')
+    'VonHeikemen/lsp-zero.nvim',
+    requires = {
+      -- LSP support with debugger
+      { 'nvim-lua/plenary.nvim' },
+      { 'neovim/nvim-lspconfig' },
+      { 'williamboman/mason.nvim' },
+      { 'williamboman/mason-lspconfig.nvim' },
+      { 'jose-elias-alvarez/null-ls.nvim' },
 
-        local bufopts = { noremap = true, silent = true, buffer = bufnr }
-        vim.keymap.set('n', '<Space>1', vim.lsp.buf.hover, bufopts)
-        vim.keymap.set('n', '<Space>2', vim.lsp.buf.definition, bufopts)
-        vim.keymap.set('n', '<Space>3', vim.lsp.buf.references, bufopts)
-        vim.keymap.set('n', '<Space>4', vim.lsp.buf.formatting, bufopts)
-        vim.keymap.set('n', '<Space>5', vim.lsp.buf.rename, bufopts)
-        vim.keymap.set('n', '<Space>6', vim.lsp.buf.code_action, bufopts)
-      end
-      local servers = { 'pyright' }
-      for _, lsp in pairs(servers) do
-        require('lspconfig')[lsp].setup {
-          on_attach = on_attach,
-          flags = { debounce_text_changes = 150 }
-        }
-      end
-    end
-  }
+      -- for snippets
+      { 'L3MON4D3/LuaSnip' },
+      { 'rafamadriz/friendly-snippets' },
 
-  use {
-    'williamboman/mason.nvim',
+      -- for complition
+      { 'hrsh7th/nvim-cmp' },
+      { 'hrsh7th/cmp-buffer' },
+      { 'hrsh7th/cmp-path' },
+      { 'hrsh7th/cmp-nvim-lsp' },
+      { 'hrsh7th/cmp-nvim-lua' },
+      { 'saadparwaiz1/cmp_luasnip' },
+    },
     config = function()
-      require('mason').setup {
-        icons = {
-          package_installed   = '[x]',
-          package_pending     = '[~]',
-          package_uninstalled = '[ ]',
+      local lsp = require('lsp-zero')
+      lsp.set_preferences {
+        suggest_lsp_servers = true,
+        setup_servers_on_start = true,
+        set_lsp_keymaps = true,
+        configurate_diagnostics = true,
+        cmp_capabilities = true,
+        manage_nvim_cmp = true,
+        call_servers = 'local',
+        sign_icons = {
+          error = 'E',
+          warn  = 'W',
+          hint  = 'h',
+          info  = 'i',
         }
       }
-    end
-  }
 
-  use {
-    'williamboman/mason-lspconfig.nvim',
-    requires = {{ 'williamboman/mason.nvim' }},
-    config = function()
-      require('mason-lspconfig').setup {
-        automatic_installation = true,
-        ensure_installed = { 'sumneko_lua' },
+      local null = require('null-ls')
+      local null_opts = lsp.build_options('null-ls', {})
+      null.setup {
+        on_attach = null_opts.on_attach,
       }
+
+      lsp.setup()
     end
   }
 
@@ -318,11 +316,20 @@ require('packer').startup { function()
 
   use {
     'RRethy/nvim-base16',
-    requires = {{'nvim-treesitter/nvim-treesitter'}},
+    requires = {{ 'nvim-treesitter/nvim-treesitter' }},
   }
 
   use {
     'nvim-treesitter/playground'
+  }
+
+  use {
+    'LhKipp/nvim-nu',
+    requires = {{ 'nvim-treesitter/nvim-treesitter' }},
+    run = ':TSInstall nu',
+    config = function()
+      require('nu').setup {}
+    end
   }
 
   use {
@@ -382,23 +389,23 @@ end
 
 if not packer_bootstrap then
 
-  if has_installed('kommentary.nvim') then
+  if is_plugged('kommentary.nvim') then
     key('n', '--', '<Plug>kommentary_line_default', {})
     key('n', '-',  '<Plug>kommentary_motion_default', {})
     key('v', '-',  '<Plug>kommentary_visual_default<C-c>', {})
   end
 
-  if has_installed('hop.nvim') then
+  if is_plugged('hop.nvim') then
     key('n', '<Space>h', ':<C-u>HopPattern<CR>', {})
     key('n', '<Space>l', ':<C-u>HopChar1<CR>', {})
   end
 
-  if has_installed('nvim-treehopper') then
+  if is_plugged('nvim-treehopper') then
     key('n', '<Space>t', function() require('tsht').move{side='start'} end, { noremap = true })
     key('n', '<Space>T', function() require('tsht').move{side='end'}   end, { noremap = true })
   end
 
-  if has_installed('telescope.nvim') then
+  if is_plugged('telescope.nvim') then
     local pickers = {
       { key = 'b', fn = function(x, y) x.buffers(y)     end },
       { key = 'c', fn = function(x, y) x.colorscheme(y) end },
@@ -406,6 +413,7 @@ if not packer_bootstrap then
       { key = 'g', fn = function(x, y) x.git_files(y)   end },
       { key = 'j', fn = function(x, y) x.current_buffer_fuzzy_find(y) end },
       { key = 'k', fn = function(x, y) x.keymaps(y)     end },
+      { key = 'l', fn = function(x, y) x.filetype(y)    end },
       { key = 'm', fn = function(x, y) x.oldfiles(y)    end },
     }
     for _, p in pairs(pickers) do
@@ -421,32 +429,47 @@ if not packer_bootstrap then
     end
   end
 
-  if has_installed('nvim-base16') then
+  if is_plugged('nvim-base16') then
     local base16 = require('base16-colorscheme')
     local using_scheme = is_win and 'onedark' or 'solarized-dark'
+    function postfix_color()
+      -- overwrite colorscheme with:
+      --   monotone: 00-07 (center: 3-4)
+      --   red:      08   orange:   09   yellow:   0A
+      --   green:    0B   cyan:     0C   blue:     0D
+      --   magenta:  0E   brown:    0F
+      local api = vim.api
+      local colors = base16.colors
+      local is_light = string.find(api.nvim_exec('color', true), "light")
+      local fg = is_light and colors.base00 or colors.base07
+      local bg = is_light and colors.base07 or colors.base00
+      api.nvim_set_hl(0, 'VertSplit', { fg = colors.base01, bg = bg })
+      -- overwrite colorscheme ... hop.nvim
+      api.nvim_set_hl(0, 'HopNextKey',   { fg = colors.base0E, bold = true })
+      api.nvim_set_hl(0, 'HopNextKey1',  { fg = colors.base0D, bold = true })
+      api.nvim_set_hl(0, 'HopNextKey2',  { fg = colors.base0C, bold = false })
+      api.nvim_set_hl(0, 'HopPreview',   { fg = colors.base00, bg = colors.base0A })
+      api.nvim_set_hl(0, 'HopUnmatched', { link = 'Comment' })
+      api.nvim_set_hl(0, 'HopCursor',    { link = 'Cursor' })
+      -- overwrite colorscheme ... nvim-treesitter
+      api.nvim_set_hl(0, 'TSField',          { link = 'TSVariable' })
+      api.nvim_set_hl(0, 'TSParameter',      { link = 'TSVariable' })
+      api.nvim_set_hl(0, 'TSConstructor',    { link = 'TSText' })
+      api.nvim_set_hl(0, 'TSPunctDelimiter', { link = 'TSText' })
+      api.nvim_set_hl(0, 'TSStringRegex',    { link = 'TSConstant' })
+      -- overwrite colorscheme ... nvim-lspconfig
+      api.nvim_set_hl(0, 'DiagnosticError', { fg = fg, bg = colors.base08 })
+      api.nvim_set_hl(0, 'DiagnosticWarn',  { fg = colors.base00, bg = colors.base09 })
+      api.nvim_set_hl(0, 'DiagnosticHint',  { fg = fg, bg = colors.base0C })
+      api.nvim_set_hl(0, 'DiagnosticInfo',  { fg = fg, bg = colors.base04 })
+    end
+    api.nvim_create_augroup('base16_posthook', { clear = true })
+    api.nvim_create_autocmd({ 'ColorScheme' }, {
+      group = 'base16_posthook',
+      callback = postfix_color,
+    })
     base16.with_config { telescope = true }
     cmd("color base16-"..using_scheme)
-    -- overwrite colorscheme with:
-    --   monotone: 00-07 (center: 3-4)
-    --   red:      08   orange:   09   yellow:   0A
-    --   green:    0B   cyan:     0C   blue:     0D
-    --   magenta:  0E   brown:    0F
-    local colors = base16.colors
-    api.nvim_set_hl(0, 'Cursor',    { fg = colors.base00, bg = colors.base0D })
-    api.nvim_set_hl(0, 'VertSplit', { fg = colors.base01, bg = nil })
-    -- overwrite colorscheme ... hop.nvim
-    api.nvim_set_hl(0, 'HopNextKey',   { fg = colors.base0E, bold = true })
-    api.nvim_set_hl(0, 'HopNextKey1',  { fg = colors.base0D, bold = true })
-    api.nvim_set_hl(0, 'HopNextKey2',  { fg = colors.base0C, bold = false })
-    api.nvim_set_hl(0, 'HopPreview',   { fg = colors.base00, bg = colors.base0A })
-    api.nvim_set_hl(0, 'HopUnmatched', { link = 'Comment' })
-    api.nvim_set_hl(0, 'HopCursor',    { link = 'Cursor' })
-    -- overwrite colorscheme ... nvim-treesitter
-    api.nvim_set_hl(0, 'TSField',          { link = 'TSVariable' })
-    api.nvim_set_hl(0, 'TSParameter',      { link = 'TSVariable' })
-    api.nvim_set_hl(0, 'TSConstructor',    { link = 'TSText' })
-    api.nvim_set_hl(0, 'TSPunctDelimiter', { link = 'TSText' })
-    api.nvim_set_hl(0, 'TSStringRegex',    { link = 'TSConstant' })
   end
 
 end

@@ -1,7 +1,11 @@
 -- vim: ft=lua
+nyagos.completion_slash = true
+
 nyagos.prompt = function(this)
   if nyagos.which('starship') then
-    local starship = nyagos.eval('starship prompt 2> nul') .. '$e[37;0m' .. ' '
+    local level = nyagos.eval('echo %ERRORLEVEL%')
+    local cmd_ss = 'starship prompt -s ' .. level .. ' 2> nul'
+    local starship = nyagos.eval(cmd_ss) .. '$e[37;0m' .. ' '
     prompt = '\n' .. starship
     return nyagos.default_prompt(prompt, "")
   else
@@ -15,8 +19,8 @@ nyagos.alias.cm = 'chezmoi $*'
 nyagos.alias.sp = 'scoop $*'
 nyagos.alias.config = 'cd $(chezmoi source-path)'
 nyagos.alias.root = 'cd $(git rev-parse --show-toplevel)'
-nyagos.alias.yq = 'dasel -w json | jq $* | dasel -r json -w yaml'
-nyagos.alias.tq = 'dasel -w json | jq $* | dasel -r json -w toml'
+nyagos.alias.yq = 'dasel -r yaml -w json | jq $* | dasel -r json -w yaml'
+nyagos.alias.tq = 'dasel -r toml -w json | jq $* | dasel -r json -w toml'
 
 function complete_chezmoi(args)
   if #args == 2 then
@@ -43,7 +47,9 @@ function complete_scoop(args)
       'unhold', 'uninstall', 'update', 'virustotal', 'which',
     }
   elseif #args == 1 and args[-1] == 'alias' then
-    return 1
+    return { 'add', 'list', 'rm' }
+  elseif #args == 1 and args[-1] == 'bucket' then
+    return { 'add', 'list', 'known', 'rm' }
   else return nil end
 end
 
