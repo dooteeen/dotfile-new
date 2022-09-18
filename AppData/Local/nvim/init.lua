@@ -43,6 +43,7 @@ opt.fileformats = 'dos,unix,mac'
 opt.helplang = {'ja','en'}
 
 opt.showtabline = 0
+opt.showmode = false
 
 opt.splitbelow = true
 opt.splitright = true
@@ -207,8 +208,6 @@ require('packer').startup { function()
         smart_space('(', ')'),
         smart_space('{', '}'),
         smart_space('[', ']'),
-        -- for go-template (ex. chezmoi)
-        rule('{{', '}}'),
         -- for fish shell
         endwise('if.*$', 'end', 'fish', 'if_statement'),
         endwise('for.*$', 'end', 'fish', 'for_statement'),
@@ -340,6 +339,26 @@ require('packer').startup { function()
   }
 
   use {
+    'akinsho/toggleterm.nvim',
+    tag = '*',
+    config = function()
+      require('toggleterm').setup {
+        open_mapping = '@@',
+        size = function(term)
+          if term.direction == 'horizontal' then
+            return 15
+          elseif term.direction == 'vertical' then
+            return vim.o.columns * 0.4
+          else
+            return 20
+          end
+        end,
+        direction = 'vertical',
+      }
+    end
+  }
+
+  use {
     'nvim-telescope/telescope.nvim',
     branch = '0.1.x',
     requires = {
@@ -347,6 +366,9 @@ require('packer').startup { function()
       { 'nvim-treesitter/nvim-treesitter' },
       { 'kyazdani42/nvim-web-devicons', opt = true },
     },
+    config = function()
+      require('telescope').setup()
+    end
   }
 
   use {
@@ -403,8 +425,7 @@ if not packer_bootstrap then
   end
 
   if is_plugged('hop.nvim') then
-    key('n', '<Space>o', ':<C-u>HopChar1<CR>', {})
-    key('n', '<Space>p', ':<C-u>HopPattern<CR>', {})
+    key('n', '<Space><Space>', ':<C-u>HopWord<CR>', {})
   end
 
   if is_plugged('telescope.nvim') then
@@ -420,7 +441,7 @@ if not packer_bootstrap then
     }
     for _, p in pairs(pickers) do
       key('n', '<Space>'..p.key, function()
-        p.fn(require('telescope.builtin'), require('telescope.themes').get_dropdown {
+        p.fn(require('telescope.builtin'), require('telescope.themes').get_ivy {
           borderchars = {
             prompt =  {'', '', '', '', '', '', '', ''},
             results = {'', '', '', '', '', '', '', ''},
@@ -449,7 +470,7 @@ if not packer_bootstrap then
       -- overwrite colorscheme ... hop.nvim
       api.nvim_set_hl(0, 'HopNextKey',   { fg = colors.base0E, bold = true })
       api.nvim_set_hl(0, 'HopNextKey1',  { fg = colors.base0D, bold = true })
-      api.nvim_set_hl(0, 'HopNextKey2',  { fg = colors.base0C, bold = false })
+      api.nvim_set_hl(0, 'HopNextKey2',  { fg = bg, bold = false })
       api.nvim_set_hl(0, 'HopPreview',   { fg = colors.base00, bg = colors.base0A })
       api.nvim_set_hl(0, 'HopUnmatched', { link = 'Comment' })
       api.nvim_set_hl(0, 'HopCursor',    { link = 'Cursor' })
