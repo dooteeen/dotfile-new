@@ -51,6 +51,10 @@ opt.splitright = true
 opt.updatetime = 300
 opt.signcolumn = 'yes'
 
+if fn.executable('nyagos') then
+  opt.sh = "nyagos"
+end
+
 
 
 key("n", "gj", "j",  { noremap = true, silent = true })
@@ -364,10 +368,21 @@ require('packer').startup { function()
     requires = {
       { 'nvim-lua/plenary.nvim' },
       { 'nvim-treesitter/nvim-treesitter' },
+      { 'nvim-telescope/telescope-project.nvim' },
       { 'kyazdani42/nvim-web-devicons', opt = true },
     },
     config = function()
-      require('telescope').setup()
+      require('telescope').setup {
+        extensions = {
+          project = {
+            base_dirs = {
+              '~/Projects',
+              '~/.local/share',
+              '~/ghq'
+            }
+          }
+        }
+      }
     end
   }
 
@@ -430,18 +445,20 @@ if not packer_bootstrap then
 
   if is_plugged('telescope.nvim') then
     local pickers = {
-      { key = 'b', fn = function(x, y) x.buffers(y)     end },
-      { key = 'c', fn = function(x, y) x.colorscheme(y) end },
-      { key = 'f', fn = function(x, y) x.find_files(y)  end },
-      { key = 'g', fn = function(x, y) x.git_files(y)   end },
-      { key = 'j', fn = function(x, y) x.current_buffer_fuzzy_find(y) end },
-      { key = 'k', fn = function(x, y) x.keymaps(y)     end },
-      { key = 'l', fn = function(x, y) x.diagnostics(y) end },
-      { key = 'm', fn = function(x, y) x.oldfiles(y)    end },
+      { key = 'b', is_ext = false, fn = function(x, y) x.buffers(y)     end },
+      { key = 'c', is_ext = false, fn = function(x, y) x.colorscheme(y) end },
+      { key = 'f', is_ext = false, fn = function(x, y) x.find_files(y)  end },
+      { key = 'g', is_ext = false, fn = function(x, y) x.git_files(y)   end },
+      { key = 'j', is_ext = false, fn = function(x, y) x.current_buffer_fuzzy_find(y) end },
+      { key = 'k', is_ext = false, fn = function(x, y) x.keymaps(y)     end },
+      { key = 'l', is_ext = false, fn = function(x, y) x.diagnostics(y) end },
+      { key = 'm', is_ext = false, fn = function(x, y) x.oldfiles(y)    end },
+      { key = 'p', is_ext = true,  fn = function(x, y) x.project.project(y) end },
     }
     for _, p in pairs(pickers) do
+      local src = p.is_ext and require('telescope').extensions or require('telescope.builtin')
       key('n', '<Space>'..p.key, function()
-        p.fn(require('telescope.builtin'), require('telescope.themes').get_ivy {
+        p.fn(src, require('telescope.themes').get_ivy {
           borderchars = {
             prompt =  {'', '', '', '', '', '', '', ''},
             results = {'', '', '', '', '', '', '', ''},
@@ -477,6 +494,7 @@ if not packer_bootstrap then
       -- overwrite colorscheme ... nvim-treesitter
       api.nvim_set_hl(0, 'TSField',          { link = 'TSVariable' })
       api.nvim_set_hl(0, 'TSParameter',      { link = 'TSVariable' })
+      api.nvim_set_hl(0, 'TSException',      { link = 'TSConditional' })
       api.nvim_set_hl(0, 'TSConstructor',    { link = 'TSText' })
       api.nvim_set_hl(0, 'TSPunctDelimiter', { link = 'TSText' })
       api.nvim_set_hl(0, 'TSStringRegex',    { link = 'TSConstant' })
