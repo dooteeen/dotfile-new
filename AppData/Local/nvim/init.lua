@@ -405,8 +405,8 @@ require('packer').startup { function()
           lualine_a = { 'mode' },
           lualine_b = { 'filename' },
           lualine_c = {},
-          lualine_x = {},
-          lualine_y = { 'encoding', 'fileformat', 'filetype' },
+          lualine_x = { 'encoding', 'fileformat', 'filetype' },
+          lualine_y = {},
           lualine_z = { 'location' },
         },
         inactive_sections = {
