@@ -1,3 +1,36 @@
 [Editor]
-FontFamily = "PlemolJP Console NF"
+FontFamily = "PlemolJP Console NF Text"
 FontSize = 12
+Linespace = 0
+ExtCmdline = true
+ExtPopupmenu = true
+ExtTabline = false
+ExtMessages = true
+DrawBorder = true
+Clipboard = true
+DisableImeInNormal = true
+IndentGuide = true
+SmoothScroll = true
+
+[Cursor]
+SmoothMove = true
+Duration = 60
+
+[Popupmenu]
+ShowDetail = true
+Transparent = 0.9
+
+[Tabline]
+Visible = false
+
+[Message]
+Transparent = 0.3
+
+[Lint]
+Visible = false
+
+[ScrollBar]
+Visible = false
+
+[Workspace]
+PathStyle = "name"

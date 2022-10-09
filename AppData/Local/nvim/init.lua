@@ -348,16 +348,10 @@ require('packer').startup { function()
     config = function()
       require('toggleterm').setup {
         open_mapping = '@@',
-        size = function(term)
-          if term.direction == 'horizontal' then
-            return 15
-          elseif term.direction == 'vertical' then
-            return vim.o.columns * 0.4
-          else
-            return 20
-          end
-        end,
-        direction = 'vertical',
+        direction = 'float',
+        float_opts = {
+          border = 'single',
+        }
       }
     end
   }
@@ -426,8 +420,10 @@ require('packer').startup { function()
     require('packer').sync()
   end
 
-end
-}
+end,
+config = {
+  display = { open_fn = require('packer.util').float }
+}}
 
 -- plugins keymap
 
