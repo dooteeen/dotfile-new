@@ -82,6 +82,7 @@ key("n", "q", "$", { noremap = true, silent = true })
 key("o", "q", "$", { noremap = true, silent = true })
 key("v", "q", "$", { noremap = true, silent = true })
 key("n", "Q", "q", { noremap = true, silent = true })
+key("", "$", "<Nop>")
 
 key("n", "t", "0", { noremap = true, silent = true })
 key("n", "T", "^", { noremap = true, silent = true })
