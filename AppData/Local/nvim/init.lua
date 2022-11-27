@@ -172,6 +172,8 @@ require('packer').startup { function()
           enable = not is_code,
           disable = { 'help', 'TelescopePrompt' },
         },
+        indent = { enable = true },
+        incremental_selection = { enable = false },
         -- extension: textobjects
         textobjects = {
           select = {
@@ -509,15 +511,15 @@ if not packer_bootstrap then
 
   if is_plugged('telescope.nvim') then
     local pickers = {
-      { key = 'b', is_ext = false, fn = function(x, y) x.buffers(y)     end },
+      { key = 'b', is_ext = false, fn = function(x, y) x.buffers(y) end },
       { key = 'c', is_ext = false, fn = function(x, y) x.colorscheme(y) end },
       { key = 'd', is_ext = false, fn = function(x, y) x.diagnostics(y) end },
-      { key = 'f', is_ext = false, fn = function(x, y) x.find_files(y)  end },
-      { key = 'g', is_ext = false, fn = function(x, y) x.git_files(y)   end },
+      { key = 'f', is_ext = false, fn = function(x, y) x.find_files(y) end },
+      { key = 'g', is_ext = false, fn = function(x, y) x.git_files(y) end },
       { key = 'j', is_ext = false, fn = function(x, y) x.current_buffer_fuzzy_find(y) end },
-      { key = 'k', is_ext = false, fn = function(x, y) x.keymaps(y)     end },
+      { key = 'k', is_ext = false, fn = function(x, y) x.keymaps(y) end },
       { key = 'l', is_ext = false, fn = function(x, y) x.filetypes(y) end },
-      { key = 'm', is_ext = false, fn = function(x, y) x.oldfiles(y)    end },
+      { key = 'm', is_ext = false, fn = function(x, y) x.oldfiles(y) end },
       { key = 'p', is_ext = true,  fn = function(x, y) x.project.project(y) end },
       { key = 'q', is_ext = false, fn = function(x, y) x.quickfix(y) end },
       { key = 'y', is_ext = false, fn = function(x, y) x.registers(y) end },
