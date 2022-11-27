@@ -7,7 +7,13 @@ local opt = vim.opt
 
 is_code = fn.exists'g:vscode' == 1
 is_win  = fn.has'win32' == 1
-is_gui  = env.TERM == nil
+is_gui  = vim.g.gonvim_running == 1
+in_repo = fn.executable('git') and fn.system('git rev-parse --is-inside-work-tree')
+in_venv = false
+if in_repo and fn.executable('pipenv') then
+  in_venv = env.PIPENV_ACTIVE
+end
+--if fn.empty(fn.glob(install_path)) > 0 then
 
 
 cmd [[language C]]
@@ -53,6 +59,11 @@ opt.signcolumn = 'yes'
 
 if fn.executable('nyagos') then
   opt.sh = "nyagos"
+  opt.shellcmdflag = "-k cls"
+end
+
+if in_venv then
+  vim.g.python3_host_prog = fn.system 'which python3'
 end
 
 
@@ -160,8 +171,32 @@ require('packer').startup { function()
           enable = not is_code,
           disable = { 'help', 'TelescopePrompt' },
         },
+        -- extension: textobjects
+        textobjects = {
+          select = {
+            enable = true,
+            lookahead = true,
+            keymap = {
+              ['aa'] = '@parameter.outer',
+              ['ia'] = '@parameter.inner',
+              ['ab'] = '@block.outer',
+              ['ib'] = '@block.inner',
+              ['ac'] = '@comment.outer',
+              ['ic'] = '@comment.outer',
+              ['af'] = '@function.outer',
+              ['if'] = '@function.inner',
+              ['ai'] = '@conditional.outer',
+              ['ii'] = '@conditional.inner',
+            }
+          }
+        }
       }
     end,
+  }
+
+  use {
+    'nvim-treesitter/nvim-treesitter-textobjects',
+    requires = {{ 'nvim-treesitter/nvim-treesitter' }},
   }
 
   use {
@@ -169,7 +204,7 @@ require('packer').startup { function()
     requires = {{ 'nvim-treesitter/nvim-treesitter' }},
     config = function()
       require('tsht').config.hint_keys = {
-        "A", "B", "C", "D", "E", "F", "G",
+        "a", "b", "c", "d", "e", "f", "g", "h", "i",
       }
     end
   }
@@ -436,7 +471,12 @@ if not packer_bootstrap then
   end
 
   if is_plugged('hop.nvim') then
-    key('n', '<Space><Space>', ':<C-u>HopWord<CR>', {})
+    key('n', '<Space><Space>', ':<C-u>HopPattern<CR>', {})
+  end
+
+  if is_plugged('nvim-treehopper') then
+    key('o', '<Space>', ':<C-u>lua require("tsht").nodes()<Cr>', { noremap = false, silent = true, })
+    key('x', '<Space>', ':lua require("tsht").nodes()<Cr>', { noremap = true, silent = true, })
   end
 
   if is_plugged('telescope.nvim') then
@@ -453,12 +493,13 @@ if not packer_bootstrap then
     }
     for _, p in pairs(pickers) do
       local src = p.is_ext and require('telescope').extensions or require('telescope.builtin')
+      local empty = {'', '', '', '', '', '', '', ''}
       key('n', '<Space>'..p.key, function()
         p.fn(src, require('telescope.themes').get_ivy {
           borderchars = {
-            prompt =  {'', '', '', '', '', '', '', ''},
-            results = {'', '', '', '', '', '', '', ''},
-            preview = {'', '', '', '', '', '', '', ''},
+            prompt =  empty,
+            results = empty,
+            preview = empty,
           }
         })
       end, { noremap = true })
@@ -499,6 +540,8 @@ if not packer_bootstrap then
       api.nvim_set_hl(0, 'DiagnosticSignWarn',  { fg = colors.base09, bold = true })
       api.nvim_set_hl(0, 'DiagnosticSignHint',  { fg = colors.base03, bold = true })
       api.nvim_set_hl(0, 'DiagnosticSignInfo',  { fg = colors.base03, bold = true })
+      -- overwrite colorscheme ... nvim-treehopper
+      api.nvim_set_hl(0, 'TSNodeKey',  { fg = colors.base0B, bold = true })
     end
     api.nvim_create_augroup('base16_posthook', { clear = true })
     api.nvim_create_autocmd({ 'ColorScheme' }, {
