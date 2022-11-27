@@ -258,6 +258,29 @@ require('packer').startup { function()
     end
   }
 
+  use {
+    'rmagatti/alternate-toggler',
+    config = function()
+      require('alternate-toggler').setup {
+        alternates = {
+          ["1"]    = "0",
+          ["true"] = "false",
+          ["True"] = "False",
+          ["TRUE"] = "FALSE",
+          ["Yes"]  = "No",
+          ["YES"]  = "NO",
+          ["On"]   = "Off",
+          ["ON"]   = "OFF",
+          ["<="]   = ">=",
+          ["<"]    = ">",
+          ["+"]    = "-",
+          ["==="]  = "!==",
+          ["=="]   = "!=",
+        }
+      }
+    end
+  }
+
 
   if is_code then return nil end
 
@@ -470,6 +493,10 @@ if not packer_bootstrap then
     key('v', '-',  '<Plug>kommentary_visual_default<C-c>', {})
   end
 
+  if is_plugged('alternate-toggler') then
+    key('n', '$', ':<C-u>ToggleAlternate<Cr>', { noremap = true, silent = true })
+  end
+
   if is_plugged('hop.nvim') then
     key('n', '<Space><Space>', ':<C-u>HopPattern<CR>', {})
   end
@@ -483,13 +510,16 @@ if not packer_bootstrap then
     local pickers = {
       { key = 'b', is_ext = false, fn = function(x, y) x.buffers(y)     end },
       { key = 'c', is_ext = false, fn = function(x, y) x.colorscheme(y) end },
+      { key = 'd', is_ext = false, fn = function(x, y) x.diagnostics(y) end },
       { key = 'f', is_ext = false, fn = function(x, y) x.find_files(y)  end },
       { key = 'g', is_ext = false, fn = function(x, y) x.git_files(y)   end },
       { key = 'j', is_ext = false, fn = function(x, y) x.current_buffer_fuzzy_find(y) end },
       { key = 'k', is_ext = false, fn = function(x, y) x.keymaps(y)     end },
-      { key = 'l', is_ext = false, fn = function(x, y) x.diagnostics(y) end },
+      { key = 'l', is_ext = false, fn = function(x, y) x.filetypes(y) end },
       { key = 'm', is_ext = false, fn = function(x, y) x.oldfiles(y)    end },
       { key = 'p', is_ext = true,  fn = function(x, y) x.project.project(y) end },
+      { key = 'q', is_ext = false, fn = function(x, y) x.quickfix(y) end },
+      { key = 'y', is_ext = false, fn = function(x, y) x.registers(y) end },
     }
     for _, p in pairs(pickers) do
       local src = p.is_ext and require('telescope').extensions or require('telescope.builtin')
