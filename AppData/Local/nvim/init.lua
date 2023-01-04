@@ -477,6 +477,8 @@ require('packer').startup { function()
     end
   }
 
+  use 'dstein64/vim-startuptime'
+
   if packer_bootstrap then
     require('packer').sync()
   end
